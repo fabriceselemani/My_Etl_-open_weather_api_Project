@@ -4,3 +4,6 @@ apache-airflow-providers-postgres==4.1.0
 apache-airflow-providers-http==5.0.0
 python-dotenv
 apache-airflow
+pandas
+requests
+astro-run-dag # This package is needed for the astro run command. It will be removed before a deploy
