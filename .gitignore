@@ -9,3 +9,7 @@ airflow-webserver.pid
 webserver_config.py
 airflow.cfg
 airflow.db
+my_env
+tests/dags
+dags/.env
+.idea

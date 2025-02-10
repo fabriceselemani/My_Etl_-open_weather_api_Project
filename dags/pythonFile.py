@@ -12,7 +12,7 @@ import requests
 load_dotenv()
 api_key = os.getenv('myApiKey')   # Api key
 
-api_request_conn = os.getenv('api_request_conn')  # Api connection
+api_request_conn = os.getenv('api_request_conn')  # Api connection  (url)
 postgres_id = "postgres_conn"  # Postgres connection
 
 default_args = {
@@ -111,7 +111,7 @@ with DAG(
         conn = postgres_hook.get_conn()
         cursor = conn.cursor()
 
-        # Create the first table to store the historical data infos
+        # Create the first table to store the historical data info
         cursor.execute("""
             CREATE TABLE IF NOT EXISTS historical_weather_info (
                 id SERIAL PRIMARY KEY,       
@@ -134,8 +134,8 @@ with DAG(
                 sunrise_times TIME WITHOUT TIME ZONE,
                 sunset_times TIME WITHOUT TIME ZONE,
                 day_lengths VARCHAR(250),
-                week_days VARCHAR(250)
-                    
+                week_days VARCHAR(250),
+                       UNIQUE (city_id, dates)             
             )
         """)
 
@@ -162,14 +162,16 @@ with DAG(
                 sunrise_times TIME WITHOUT TIME ZONE,
                 sunset_times TIME WITHOUT TIME ZONE,
                 day_lengths VARCHAR(250),
-                week_days VARCHAR(250)
+                week_days VARCHAR(250),
+                       UNIQUE (city_id)
             )
         """)
 
         
 
         # Insert data into the historical data infos table   
-        cursor.execute("""INSERT INTO historical_weather_info (city_id, cities, countries, longitudes, latitudes, weather_mains, descriptions, temperatures, wind_speeds, wind_degrees, temperature_maximums, temperature_minimums, feels_likes, humidity_list, time_zones, dates, sunrise_times, sunset_times, day_lengths, week_days) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)"""
+        cursor.execute("""INSERT INTO historical_weather_info (city_id, cities, countries, longitudes, latitudes, weather_mains, descriptions, temperatures, wind_speeds, wind_degrees, temperature_maximums, temperature_minimums, feels_likes, humidity_list, time_zones, dates, sunrise_times, sunset_times, day_lengths, week_days) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
+                       ON CONFLICT (city_id, dates) DO NOTHING;"""
         , (
             record["city_id"],
             record["cities"],
@@ -231,9 +233,6 @@ with DAG(
         conn.close()
 
           
-
-    
-
 
     # Define the task pipeline:
     raw_data = extract_data()
